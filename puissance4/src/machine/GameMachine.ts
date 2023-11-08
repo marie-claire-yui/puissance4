@@ -2,7 +2,7 @@ import { InterpreterFrom, createMachine, interpret } from 'xstate'
 import { createModel } from 'xstate/lib/model'
 import { GameContext, GameStates, GridState, Player, PlayerColor, Position } from '../types'
 import { canChooseColorGuard, canDropGuard, canJoinGuard, canLeaveGuard, canStartGameGuard, isDrawMoveGuard, isWiningMoveGuard } from './guards'
-import { chooseColorAction, dropTokenAction, joinGameAction, leaveGameAction, restartAction, saveWiningPositions, setCurrentPlayerAction, switchPlayerAction } from './actions'
+import { chooseColorAction, dropTokenAction, joinGameAction, leaveGameAction, restartAction, saveWiningPositions, saveWiningPositionsActions, setCurrentPlayerAction, switchPlayerAction } from './actions'
 
 
 
@@ -75,6 +75,11 @@ states: {
             cond: isDrawMoveGuard,
             target: GameStates.DRAW,
             actions: [GameModel.assign(dropTokenAction)]
+        },
+        {
+            cond: isWiningMoveGuard,
+            target: GameStates.VICTORY,
+            actions: [GameModel.assign(saveWiningPositionsActions), GameModel.assign(dropTokenAction)]
         }
         ,{
             cond: canDropGuard,
