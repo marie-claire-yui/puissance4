@@ -27,35 +27,57 @@ describe("machine/GameMachine", ()=> {
     })
 
     describe("dropToken", () => {
-        const machine = makeGame(GameStates.PLAY, {
-            players: [{
-                id:'1',
-                name: '1',
-                color: PlayerColor.RED
-            },{
-                id:'2',
-                name: '2',
-                color: PlayerColor.YELLOW
-            }],
-            currentPlayer: '1',
-            grid: [
-                ["E","E","E","E","E","E","R"],
-                ["E","E","E","E","E","R","Y"],
-                ["E","E","E","E","E","R","R"],
-                ["E","E","E","E","E","R","Y"],
-                ["E","E","E","E","E","Y","R"],
-                ["E","E","E","E","E","Y","Y"]
-            ]
-        }
-        )
-        it.only('should let me drop a token', ()=>{
+ 
+
+        let machine: InterpreterFrom<typeof GameMachine>
+
+        beforeEach(()=> {
+             machine = makeGame(GameStates.PLAY, {
+                players: [{
+                    id:'1',
+                    name: '1',
+                    color: PlayerColor.RED
+                },{
+                    id:'2',
+                    name: '2',
+                    color: PlayerColor.YELLOW
+                }],
+                currentPlayer: '1',
+                grid: [
+                    ["E","E","E","E","E","E","R"],
+                    ["E","E","E","E","E","R","Y"],
+                    ["E","E","E","E","E","R","R"],
+                    ["E","E","E","E","E","R","Y"],
+                    ["E","E","E","E","E","Y","R"],
+                    ["E","E","E","E","E","Y","Y"]
+                ]
+            }
+            )
+        })
+
+
+        it('should let me drop a token', ()=>{
             // expect(canDropGuard(machine.state.context, GameModel.events.dropToken("1",0))).toBe(true)
             // expect(machine.state.context.grid[5][0]).toBe(PlayerColor.RED)
         //    expect(machine.send(GameModel.events.dropToken("1", 0)).changed).toBe(true)
             console.log(machine.state.value)
         expect(machine.send(GameModel.events.dropToken("1",0)).changed).toBe(true)
         expect(machine.state.context.grid[5][0]).toBe(PlayerColor.RED)
+        expect(machine.state.value).toBe(GameStates.PLAY)
+        expect(machine.state.context.currentPlayer).toBe("2")
         } )
+
+
+        it('should not let me drop a token on filled columns', ()=>{
+        expect(machine.send(GameModel.events.dropToken("1",6)).changed).toBe(false)
+        } )
+
+        it('should make me win', ()=>{
+        expect(machine.send(GameModel.events.dropToken("1",5)).changed).toBe(true)
+        expect(machine.state.value).toBe(GameStates.VICTORY)
+        expect(machine.state.context.winingPositions).toHaveLength(4)
+        } )
+
     })
 
 } )

@@ -1,5 +1,7 @@
-import { freePositionY } from '../func/game'
-import { GameAction } from '../types'
+import { currentPlayer, freePositionY, winingPositions } from '../func/game'
+import { GameAction, GameContext, PlayerColor } from '../types'
+import { GameModel } from './GameMachine'
+
 
 export const joinGameAction: GameAction<"join"> = (context, event) => ({
     players: [...context.players, {id: event.playerId, name:event.name}]
@@ -17,3 +19,27 @@ export const dropTokenAction: GameAction<"dropToken"> = ({grid, players}, {x: ev
         grid: newGrid
     }
 }
+
+export const switchPlayerAction = (context: GameContext) => ({
+    currentPlayer: context.players.find( p => p.id !== context.currentPlayer)!
+    .id
+})
+
+export const saveWiningPositionsActions: GameAction<"dropToken"> = (context, event) => ({
+    winingPositions: winingPositions(
+        context.grid,
+        currentPlayer(context).color!,
+        event.x,
+        context.rowLength
+        )
+})
+
+export const restartAction: GameAction<"restart"> = (context) => ({
+    winingPositions: [],
+    grid: GameModel.initialContext.grid,
+    currentPlayer: null
+})
+
+export const setCurrentPlayerAction = (context: GameContext) => ({
+    currentPlayer: context.players.find( p=> p.color === PlayerColor.YELLOW)!.id
+})
