@@ -1,8 +1,8 @@
 import { InterpreterFrom, createMachine, interpret } from 'xstate'
 import { createModel } from 'xstate/lib/model'
 import { GameContext, GameStates, GridState, Player, PlayerColor, Position } from '../types'
-import { canDropGuard, canJoinGuard, canLeaveGuard, isWiningMoveGuard } from './guards'
-import { dropTokenAction, joinGameAction, leaveGameAction, saveWiningPositions, switchPlayerAction } from './actions'
+import { canChooseColorGuard, canDropGuard, canJoinGuard, canLeaveGuard, canStartGameGuard, isDrawMoveGuard, isWiningMoveGuard } from './guards'
+import { chooseColorAction, dropTokenAction, joinGameAction, leaveGameAction, restartAction, saveWiningPositions, setCurrentPlayerAction, switchPlayerAction } from './actions'
 
 
 
@@ -51,20 +51,30 @@ states: {
                 target: GameStates.LOBBY
             },
             chooseColor: {
-                target: GameStates.LOBBY
+                cond: canChooseColorGuard,
+                target: GameStates.LOBBY,
+                actions: [GameModel.assign(chooseColorAction)]
             },
             start:{
-                target: GameStates.PLAY
+                cond: canStartGameGuard,
+                target: GameStates.PLAY,
+                actions: [GameModel.assign(setCurrentPlayerAction)]
             }
         }
     },
     [GameStates.PLAY]: {
+        after: {
+            20000: {
+                target: GameStates.PLAY,
+                actions: [GameModel.assign(switchPlayerAction)]
+            }
+        },
         on: {
         dropToken: [
         {
-            cond: isWiningMoveGuard,
-            target: GameStates.VICTORY,
-            actions: [GameModel.assign(saveWiningPositions), GameModel.assign(dropTokenAction)]
+            cond: isDrawMoveGuard,
+            target: GameStates.DRAW,
+            actions: [GameModel.assign(dropTokenAction)]
         }
         ,{
             cond: canDropGuard,
@@ -78,14 +88,16 @@ states: {
     [GameStates.VICTORY]:{
         on: {
             restart:{
-                target: GameStates.LOBBY
+                target: GameStates.LOBBY,
+                actions: [GameModel.assign(restartAction)]
             }
         }
     },
     [GameStates.DRAW]:{
         on: {
             restart:{
-                target: GameStates.LOBBY
+                target: GameStates.LOBBY,
+                actions: [GameModel.assign(restartAction)]
             }
         }
     }

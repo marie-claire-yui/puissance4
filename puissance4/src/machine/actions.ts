@@ -7,8 +7,17 @@ export const joinGameAction: GameAction<"join"> = (context, event) => ({
     players: [...context.players, {id: event.playerId, name:event.name}]
 })
 
-export const leaveGameAction: GameAction<"join"> = (context, event) => ({
+export const leaveGameAction: GameAction<"leave"> = (context, event) => ({
     players: context.players.filter(p => p.id !== event.playerId)
+})
+
+export const chooseColorAction: GameAction<"chooseColor"> = (context, event) => ({
+    players: context.players.map(p => {
+        if (p.id === event.playerId){
+            return {...p, color: event.color}
+        }
+        return p
+    })
 })
 
 export const dropTokenAction: GameAction<"dropToken"> = ({grid, players}, {x: eventX, playerId}) => {

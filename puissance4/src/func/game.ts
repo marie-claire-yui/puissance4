@@ -50,3 +50,15 @@ export function currentPlayer(context: GameContext): Player {
     }
     return player
 }
+
+export function countEmptyCells(grid: GridState): number {
+    let count = 0;
+    for (let row of grid) {
+        for (let cell of row) {
+            if (cell === 'E'){
+                count++
+            }
+        }
+    }
+    return count
+}
